@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Privacidade e termos — Tessar Maps</title>
+  <meta name="description" content="Política de privacidade e termos de uso do Tessar Maps." />
+  <meta name="theme-color" content="#062E16" />
+  <link rel="icon" href="assets/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --forest-dark: #062E16;
+      --forest: #146B2C;
+      --lime: #A8D311;
+      --bg: #E7F3E4;
+      --ink: #102818;
+      --muted: #3E5A46;
+      --line: #C9DCCB;
+      --white: #fff;
+      --font-display: "Bricolage Grotesque", Georgia, serif;
+      --font-body: "Figtree", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--forest); }
+    a:hover { color: var(--forest-dark); }
+    .top {
+      background: var(--forest-dark);
+      color: var(--white);
+      padding: 1.25rem 0;
+    }
+    .wrap { width: min(100% - 2.5rem, 760px); margin-inline: auto; }
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--white);
+      text-decoration: none;
+    }
+    .brand span { color: var(--lime); }
+    main { padding: 3rem 0 4rem; }
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 4vw, 2.4rem);
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+    }
+    .meta { color: var(--muted); margin-bottom: 2rem; font-size: 0.95rem; }
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      background: #D5E6D2;
+      padding: 4px;
+      border-radius: 999px;
+      width: fit-content;
+    }
+    .tabs button {
+      border: 0;
+      background: transparent;
+      font: inherit;
+      font-weight: 700;
+      padding: 0.55rem 1.1rem;
+      border-radius: 999px;
+      cursor: pointer;
+      color: var(--ink);
+    }
+    .tabs button[aria-selected="true"] {
+      background: var(--forest);
+      color: var(--white);
+    }
+    article { display: none; }
+    article.active { display: block; }
+    h2 {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      margin: 1.75rem 0 0.45rem;
+      letter-spacing: -0.02em;
+    }
+    p { color: var(--muted); margin-bottom: 0.35rem; }
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 1.5rem 0 2.5rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div class="wrap">
+      <a class="brand" href="index.html">Tessar <span>Maps</span></a>
+    </div>
+  </div>
+
+  <main>
+    <div class="wrap">
+      <h1>Privacidade e termos</h1>
+      <p class="meta">Responsável: Beatriz Amorim · Contato: <a href="mailto:beatrizamoriml@outlook.com">beatrizamoriml@outlook.com</a> · Atualizado em 18 de novembro de 2026</p>
+
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" id="tab-privacy" aria-selected="true" aria-controls="privacy">Privacidade</button>
+        <button type="button" role="tab" id="tab-terms" aria-selected="false" aria-controls="terms">Termos de uso</button>
+      </div>
+
+      <article id="privacy" class="active" role="tabpanel" aria-labelledby="tab-privacy">
+        <h2>Em resumo</h2>
+        <p>O Tessar Maps não mostra anúncios e não usa ferramentas de rastreamento ou de análise de uso. Para usar o app, você cria uma conta com e-mail e senha. Os mapas, pins, fotos, linhas, trilhas e camadas que você cria ou importa ficam guardados apenas no seu celular.</p>
+
+        <h2>Sua conta</h2>
+        <p>Para entrar, guardamos o seu e-mail e uma versão criptografada da sua senha no Supabase, que hospeda a autenticação do app. A senha não é guardada em texto puro. A conta não guarda seus mapas, pins ou fotos, que continuam só no celular. O e-mail é usado para entrar e identificar a sua conta, e não para enviar publicidade.</p>
+
+        <h2>Localização</h2>
+        <p>O GPS é usado enquanto o app está aberto, para mostrar onde você está, gravar a coordenada dos pins e desenhar trilhas. A bússola usa o sensor de direção do aparelho. Essas informações são processadas no próprio celular e não são enviadas para nós.</p>
+
+        <h2>Câmera e fotos</h2>
+        <p>A câmera só é usada quando você fotografa um pin. A foto recebe uma marca d’água com data, hora e coordenada e fica guardada no app. Se você escolher essa opção em Configurações, uma cópia também vai para a galeria do celular. O app não lê as outras fotos da sua galeria.</p>
+
+        <h2>Mapa online</h2>
+        <p>No iPhone e iPad, o mapa online usa o MapKit da Apple (Apple Maps). No Android, o app baixa imagens da Esri (satélite) e da CARTO (ruas, com dados do OpenStreetMap). Como em qualquer acesso à internet, esses serviços recebem o endereço IP do celular e sabem quais áreas do mapa foram carregadas, o que pode indicar a região onde você está. Eles seguem as próprias políticas de privacidade. Os mapas importados em PDF ou imagem não usam a internet.</p>
+
+        <h2>Quando os dados saem do celular</h2>
+        <p>Os dados só saem do aparelho quando você decide: ao exportar em PDF, KMZ, KML ou Shapefile, ou ao fazer um backup. Você escolhe para onde o arquivo vai, e ele pode conter coordenadas, fotos, nomes e observações. Depois disso, o arquivo fica sob as regras do destino escolhido.</p>
+
+        <h2>Armazenamento e segurança</h2>
+        <p>Os dados ficam na área privada do app, que outros apps não acessam. A proteção depende também do bloqueio de tela do seu celular, então vale mantê-lo ativo. Ao desinstalar o app, esses dados são apagados. As cópias na galeria e os arquivos que você exportou continuam onde foram salvos.</p>
+
+        <h2>Seus direitos (LGPD)</h2>
+        <p>Como os dados ficam com você, você mesmo pode consultá-los, corrigi-los, levá-los para outro aparelho pelo backup e apagá-los, excluindo mapas, pins e camadas ou desinstalando o app. A exclusão da conta é feita pedindo por e-mail. Para dúvidas ou pedidos sobre privacidade, fale com Beatriz Amorim pelo e-mail beatrizamoriml@outlook.com.</p>
+
+        <h2>Mudanças nesta política</h2>
+        <p>Se o app passar a tratar dados de outra forma, esta política será atualizada e a mudança será informada no próprio app. Última atualização: 18 de novembro de 2026.</p>
+      </article>
+
+      <article id="terms" role="tabpanel" aria-labelledby="tab-terms" hidden>
+        <h2>Sobre estes termos</h2>
+        <p>Ao usar o Tessar Maps, você concorda com estes termos. O app é oferecido por Beatriz Amorim. Em caso de dúvida, escreva para beatrizamoriml@outlook.com.</p>
+
+        <h2>Precisão das informações</h2>
+        <p>A posição, as medidas de distância e área e o georreferenciamento dependem do GPS do celular, do sinal disponível e da qualidade do mapa importado. Os resultados servem como apoio ao trabalho de campo e não substituem levantamentos topográficos, geodésicos ou documentos oficiais, como os usados para definir limites de propriedade.</p>
+
+        <h2>Seus dados e arquivos</h2>
+        <p>Você é responsável pelo que coleta, importa e compartilha pelo app, incluindo ter o direito de usar os mapas importados e de fotografar e registrar os locais visitados. Como os dados ficam só no seu celular, fazer backups é importante: se o aparelho for perdido ou o app for desinstalado, não há como recuperá-los por nós.</p>
+
+        <h2>Mapas de terceiros</h2>
+        <p>No iOS, o mapa online usa dados e imagens da Apple (MapKit / Apple Maps). No Android, as imagens pertencem à Esri e aos seus fornecedores, e à CARTO e aos colaboradores do OpenStreetMap (© OpenStreetMap contributors). O uso desses mapas segue os termos de cada serviço, que podem mudar ou ficar indisponíveis sem aviso.</p>
+
+        <h2>Limites de responsabilidade</h2>
+        <p>O app é fornecido como está, sem garantia de funcionamento contínuo ou livre de erros. Use-o com atenção ao ambiente, principalmente em áreas de risco, e não o trate como único meio de orientação.</p>
+
+        <h2>Lei aplicável</h2>
+        <p>Estes termos seguem as leis do Brasil. Última atualização: 18 de novembro de 2026.</p>
+      </article>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <a href="index.html">← Voltar ao Tessar Maps</a>
+    </div>
+  </footer>
+
+  <script>
+    const tabs = document.querySelectorAll('[role="tab"]');
+    const panels = {
+      privacy: document.getElementById("privacy"),
+      terms: document.getElementById("terms"),
+    };
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const id = tab.getAttribute("aria-controls");
+        tabs.forEach((t) => t.setAttribute("aria-selected", String(t === tab)));
+        Object.entries(panels).forEach(([key, panel]) => {
+          const on = key === id;
+          panel.classList.toggle("active", on);
+          panel.hidden = !on;
+        });
+      });
+    });
+  </script>
+</body>
+</html>

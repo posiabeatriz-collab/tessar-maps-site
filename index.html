@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tessar Maps — Mapas de campo no bolso</title>
+  <meta name="description" content="Tessar Maps: importe PDF ou imagem, localize-se com GPS offline, marque pins com fotos e exporte para QGIS, Google Earth e Avenza." />
+  <meta name="theme-color" content="#062E16" />
+  <link rel="icon" href="assets/favicon.png" />
+  <link rel="apple-touch-icon" href="assets/logo.png" />
+  <meta property="og:title" content="Tessar Maps" />
+  <meta property="og:description" content="Cada dado compõe uma visão maior. Mapas de campo offline, pins com fotos e exportação profissional." />
+  <meta property="og:image" content="assets/logo.png" />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --forest-dark: #062E16;
+      --hero-top: #0C3D1C;
+      --forest: #146B2C;
+      --lime: #A8D311;
+      --lime-soft: #E4F7A8;
+      --bg: #E7F3E4;
+      --bg-deep: #D5E6D2;
+      --ink: #102818;
+      --muted: #3E5A46;
+      --line: #C9DCCB;
+      --pin: #D24B1F;
+      --path: #0F6A8F;
+      --white: #FFFFFF;
+      --radius: 18px;
+      --max: 1120px;
+      --font-display: "Bricolage Grotesque", Georgia, serif;
+      --font-body: "Figtree", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    img { max-width: 100%; display: block; }
+    a { color: inherit; text-decoration: none; }
+    button, .btn { font: inherit; cursor: pointer; border: 0; }
+
+    .wrap {
+      width: min(100% - 2.5rem, var(--max));
+      margin-inline: auto;
+    }
+
+    /* —— Nav —— */
+    .nav {
+      position: absolute;
+      inset: 0 0 auto;
+      z-index: 20;
+      padding: 1.25rem 0;
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      color: var(--white);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+    }
+    .nav-brand img {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+    }
+    .nav-brand span { color: var(--lime); }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      color: rgba(255,255,255,0.82);
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+    .nav-links a:hover { color: var(--lime-soft); }
+    @media (max-width: 720px) {
+      .nav-links a:not(.btn) { display: none; }
+    }
+
+    /* —— Buttons —— */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      padding: 0.85rem 1.35rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-lime {
+      background: var(--lime);
+      color: var(--forest-dark);
+      box-shadow: 0 10px 30px rgba(168, 211, 17, 0.28);
+    }
+    .btn-lime:hover { background: #b8e420; }
+    .btn-ghost {
+      background: transparent;
+      color: var(--white);
+      border: 1.5px solid rgba(255,255,255,0.35);
+    }
+    .btn-ghost:hover { border-color: var(--lime); color: var(--lime-soft); }
+    .btn-forest {
+      background: var(--forest-dark);
+      color: var(--white);
+    }
+    .btn-forest:hover { background: var(--forest); }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+
+    /* —— Hero —— */
+    .hero {
+      position: relative;
+      min-height: 100svh;
+      color: var(--white);
+      overflow: hidden;
+      display: grid;
+      align-items: end;
+      isolation: isolate;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background:
+        linear-gradient(180deg, rgba(6,46,22,0.55) 0%, rgba(6,46,22,0.72) 45%, rgba(6,46,22,0.94) 100%),
+        url("assets/hero-field.jpg") center / cover no-repeat;
+      transform: scale(1.04);
+      animation: heroDrift 28s ease-in-out infinite alternate;
+    }
+    .hero-topo {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      opacity: 0.18;
+      background-image: url("data:image/svg+xml,%3Csvg width='800' height='600' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 120c80 40 160-40 240 0s160 40 240 0 160-40 240 0 80 40 80 40' fill='none' stroke='%23A8D311' stroke-width='1.2'/%3E%3Cpath d='M0 220c90 35 150-35 250 0s170 35 250 0 140-35 220 0 80 35 80 35' fill='none' stroke='%23A8D311' stroke-width='1'/%3E%3Cpath d='M0 340c70 45 170-30 260 10s180 30 260-10 150-40 220 10 60 40 60 40' fill='none' stroke='%23A8D311' stroke-width='0.9'/%3E%3Cpath d='M0 460c100 30 140-50 260-10s190 45 280 5 160-35 260 15' fill='none' stroke='%23A8D311' stroke-width='0.8'/%3E%3C/svg%3E");
+      background-size: 900px auto;
+      animation: topoShift 40s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes heroDrift {
+      from { transform: scale(1.04) translate3d(0,0,0); }
+      to { transform: scale(1.1) translate3d(-1.5%, -1%, 0); }
+    }
+    @keyframes topoShift {
+      from { background-position: 0 0; }
+      to { background-position: 900px 40px; }
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 2.5rem;
+      align-items: end;
+      padding: 7.5rem 0 3.5rem;
+    }
+    @media (max-width: 900px) {
+      .hero-grid { grid-template-columns: 1fr; padding-top: 6.5rem; }
+      .phone-stage { justify-self: center; }
+    }
+    .brand-mark {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(2.8rem, 7vw, 4.6rem);
+      letter-spacing: -0.045em;
+      line-height: 0.95;
+      margin-bottom: 1.1rem;
+    }
+    .brand-mark span { color: var(--lime); }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(1.35rem, 2.8vw, 1.85rem);
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      max-width: 18ch;
+      margin-bottom: 0.85rem;
+      color: var(--lime-soft);
+    }
+    .hero-lead {
+      font-size: 1.08rem;
+      line-height: 1.55;
+      color: rgba(255,255,255,0.86);
+      max-width: 36ch;
+      margin-bottom: 1.6rem;
+    }
+
+    /* Phone mockup */
+    .phone-stage {
+      position: relative;
+      width: min(100%, 280px);
+      margin-bottom: 0.5rem;
+      animation: phoneFloat 5.5s ease-in-out infinite;
+    }
+    @keyframes phoneFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .phone {
+      position: relative;
+      border-radius: 36px;
+      background: #0a1f12;
+      padding: 10px;
+      box-shadow:
+        0 30px 60px rgba(0,0,0,0.45),
+        0 0 0 1px rgba(255,255,255,0.12);
+    }
+    .phone-screen {
+      aspect-ratio: 9 / 17.5;
+      border-radius: 28px;
+      overflow: hidden;
+      background:
+        linear-gradient(160deg, #1a4d2a 0%, #0d3018 40%, #163d24 100%);
+      position: relative;
+    }
+    .phone-notch {
+      position: absolute;
+      top: 8px; left: 50%;
+      transform: translateX(-50%);
+      width: 38%;
+      height: 18px;
+      background: #0a1f12;
+      border-radius: 12px;
+      z-index: 5;
+    }
+    .map-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(168,211,17,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(168,211,17,0.08) 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity: 0.7;
+    }
+    .map-contour {
+      position: absolute;
+      inset: 12% 8% 28% 8%;
+      border: 1.5px solid rgba(168,211,17,0.35);
+      border-radius: 45% 55% 40% 60% / 50% 40% 60% 50%;
+      box-shadow: inset 0 0 0 18px rgba(168,211,17,0.06);
+    }
+    .map-contour::after {
+      content: "";
+      position: absolute;
+      inset: 18%;
+      border: 1px solid rgba(168,211,17,0.28);
+      border-radius: 55% 45% 60% 40% / 45% 55% 45% 55%;
+    }
+    .gps-dot {
+      position: absolute;
+      top: 42%; left: 48%;
+      width: 14px; height: 14px;
+      margin: -7px;
+      background: #1A73E8;
+      border-radius: 50%;
+      box-shadow: 0 0 0 8px rgba(26,115,232,0.25);
+      animation: pulse 2.4s ease-out infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(26,115,232,0.45); }
+      70% { box-shadow: 0 0 0 16px rgba(26,115,232,0); }
+      100% { box-shadow: 0 0 0 0 rgba(26,115,232,0); }
+    }
+    .pin {
+      position: absolute;
+      width: 16px; height: 16px;
+      background: var(--pin);
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+    }
+    .pin::after {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      background: #fff;
+      border-radius: 50%;
+    }
+    .pin-1 { top: 28%; left: 62%; }
+    .pin-2 { top: 55%; left: 34%; }
+    .pin-3 { top: 48%; left: 72%; }
+    .trail {
+      position: absolute;
+      top: 42%; left: 48%;
+      width: 70px; height: 55px;
+      border: 2.5px solid var(--path);
+      border-color: var(--path) transparent transparent transparent;
+      border-radius: 50%;
+      transform: rotate(25deg);
+      opacity: 0.9;
+    }
+    .phone-hud {
+      position: absolute;
+      left: 10px; right: 10px; bottom: 12px;
+      background: rgba(6,46,22,0.88);
+      border: 1px solid rgba(168,211,17,0.25);
+      border-radius: 14px;
+      padding: 10px 12px;
+      display: grid;
+      gap: 4px;
+      backdrop-filter: blur(8px);
+    }
+    .phone-hud strong {
+      font-size: 0.72rem;
+      color: var(--lime);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .phone-hud span {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.85);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* —— Sections —— */
+    section { padding: 5.5rem 0; }
+    .section-kicker {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 0.75rem;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      letter-spacing: -0.035em;
+      line-height: 1.1;
+      max-width: 16ch;
+      margin-bottom: 0.85rem;
+    }
+    .section-lead {
+      color: var(--muted);
+      font-size: 1.08rem;
+      max-width: 42ch;
+      margin-bottom: 2.5rem;
+    }
+
+    .audience {
+      background:
+        radial-gradient(ellipse 80% 60% at 100% 0%, rgba(168,211,17,0.18), transparent 55%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+    }
+    .audience-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem 2rem;
+      list-style: none;
+      border-top: 1px solid var(--line);
+      padding-top: 2rem;
+    }
+    @media (max-width: 800px) {
+      .audience-list { grid-template-columns: 1fr; }
+    }
+    .audience-list li {
+      display: grid;
+      gap: 0.35rem;
+    }
+    .audience-list strong {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+    }
+    .audience-list span { color: var(--muted); font-size: 0.98rem; }
+
+    /* How it works */
+    .how {
+      background: var(--forest-dark);
+      color: var(--white);
+      position: relative;
+      overflow: hidden;
+    }
+    .how::before {
+      content: "";
+      position: absolute;
+      width: 420px; height: 420px;
+      right: -120px; top: -80px;
+      background: radial-gradient(circle, rgba(168,211,17,0.18), transparent 65%);
+      pointer-events: none;
+    }
+    .how .section-kicker { color: var(--lime); }
+    .how .section-lead { color: rgba(255,255,255,0.72); }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+      list-style: none;
+      counter-reset: step;
+    }
+    @media (max-width: 900px) {
+      .steps { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 560px) {
+      .steps { grid-template-columns: 1fr; }
+    }
+    .steps li {
+      position: relative;
+      padding-top: 1.25rem;
+      border-top: 2px solid rgba(168,211,17,0.35);
+      counter-increment: step;
+    }
+    .steps li::before {
+      content: counter(step, decimal-leading-zero);
+      display: block;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.6rem;
+      color: var(--lime);
+      letter-spacing: -0.04em;
+      margin-bottom: 0.7rem;
+    }
+    .steps h3 {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.45rem;
+    }
+    .steps p {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    /* Features */
+    .features { background: var(--white); }
+    .feature-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+      padding: 2.75rem 0;
+      border-top: 1px solid var(--line);
+    }
+    .feature-row:last-child { border-bottom: 1px solid var(--line); }
+    .feature-row.reverse .feature-copy { order: 2; }
+    @media (max-width: 800px) {
+      .feature-row,
+      .feature-row.reverse {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      .feature-row.reverse .feature-copy { order: 0; }
+    }
+    .feature-copy h3 {
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 3vw, 1.85rem);
+      letter-spacing: -0.03em;
+      margin-bottom: 0.65rem;
+    }
+    .feature-copy p {
+      color: var(--muted);
+      font-size: 1.02rem;
+      max-width: 38ch;
+    }
+    .feature-visual {
+      min-height: 220px;
+      border-radius: var(--radius);
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(145deg, var(--hero-top), var(--forest-dark));
+    }
+    .fv-pins {
+      background:
+        radial-gradient(circle at 70% 35%, rgba(210,75,31,0.35), transparent 28%),
+        radial-gradient(circle at 35% 60%, rgba(26,115,232,0.3), transparent 26%),
+        linear-gradient(145deg, #0f3d1f, #062E16);
+    }
+    .fv-pins .demo-pin {
+      position: absolute;
+      width: 22px; height: 22px;
+      background: var(--pin);
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+    }
+    .fv-pins .demo-pin:nth-child(1) { top: 32%; left: 58%; }
+    .fv-pins .demo-pin:nth-child(2) { top: 55%; left: 30%; background: var(--lime); }
+    .fv-pins .caption {
+      position: absolute;
+      left: 1.25rem; right: 1.25rem; bottom: 1.25rem;
+      background: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      font-size: 0.88rem;
+      color: var(--ink);
+    }
+    .fv-pins .caption small {
+      display: block;
+      color: var(--muted);
+      margin-top: 0.2rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .fv-layers {
+      display: grid;
+      place-items: center;
+      padding: 1.5rem;
+    }
+    .layer-stack {
+      width: min(100%, 260px);
+      display: grid;
+      gap: 10px;
+    }
+    .layer-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(168,211,17,0.2);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      color: var(--white);
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+    .swatch {
+      width: 14px; height: 14px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .fv-export {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      padding: 2rem;
+    }
+    .format-chip {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+      color: var(--forest-dark);
+      background: var(--lime);
+      padding: 0.7rem 1.1rem;
+      border-radius: 12px;
+    }
+    .format-chip.soft {
+      background: rgba(255,255,255,0.1);
+      color: var(--lime-soft);
+      border: 1px solid rgba(168,211,17,0.3);
+    }
+
+    /* Offline strip */
+    .offline {
+      background:
+        linear-gradient(120deg, rgba(6,46,22,0.92), rgba(12,61,28,0.88)),
+        url("assets/hero-field.jpg") center / cover;
+      color: var(--white);
+      padding: 4.5rem 0;
+    }
+    .offline-inner {
+      display: grid;
+      grid-template-columns: 1.2fr auto;
+      gap: 2rem;
+      align-items: center;
+    }
+    @media (max-width: 700px) {
+      .offline-inner { grid-template-columns: 1fr; }
+    }
+    .offline h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.7rem, 3.5vw, 2.3rem);
+      letter-spacing: -0.03em;
+      max-width: 16ch;
+      margin-bottom: 0.7rem;
+    }
+    .offline p {
+      color: rgba(255,255,255,0.8);
+      max-width: 40ch;
+      font-size: 1.05rem;
+    }
+
+    /* CTA final */
+    .cta {
+      background: var(--bg);
+      text-align: center;
+      padding-bottom: 5rem;
+    }
+    .cta h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.9rem, 4vw, 2.8rem);
+      letter-spacing: -0.035em;
+      max-width: 14ch;
+      margin: 0 auto 0.85rem;
+    }
+    .cta p {
+      color: var(--muted);
+      max-width: 38ch;
+      margin: 0 auto 1.75rem;
+      font-size: 1.05rem;
+    }
+    .cta .btn-row { justify-content: center; }
+    .stores-note {
+      margin-top: 1.25rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    /* Footer */
+    footer {
+      background: var(--forest-dark);
+      color: rgba(255,255,255,0.7);
+      padding: 2.25rem 0;
+      font-size: 0.9rem;
+    }
+    .footer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: space-between;
+      align-items: center;
+    }
+    footer strong { color: var(--white); }
+    footer a { color: var(--lime-soft); }
+    footer a:hover { color: var(--lime); }
+
+    /* Reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="hero-topo" aria-hidden="true"></div>
+
+    <nav class="nav" aria-label="Principal">
+      <div class="wrap nav-inner">
+        <a class="nav-brand" href="#topo">
+          <img src="assets/logo.png" width="36" height="36" alt="" />
+          Tessar <span>Maps</span>
+        </a>
+        <div class="nav-links">
+          <a href="#como">Como funciona</a>
+          <a href="#recursos">Recursos</a>
+          <a class="btn btn-lime" href="#contato">Falar conosco</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="wrap hero-grid" id="topo">
+      <div>
+        <p class="brand-mark">Tessar <span>Maps</span></p>
+        <h1>Mapas de campo no bolso. Offline e precisos.</h1>
+        <p class="hero-lead">
+          Cada dado compõe uma visão maior. Importe o mapa, localize-se com GPS, registre pins com fotos e leve tudo para o escritório.
+        </p>
+        <div class="btn-row">
+          <a class="btn btn-lime" href="#contato">Quero conhecer o app</a>
+          <a class="btn btn-ghost" href="#como">Ver como funciona</a>
+        </div>
+      </div>
+
+      <div class="phone-stage" aria-hidden="true">
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-notch"></div>
+            <div class="map-grid"></div>
+            <div class="map-contour"></div>
+            <div class="trail"></div>
+            <div class="gps-dot"></div>
+            <div class="pin pin-1"></div>
+            <div class="pin pin-2"></div>
+            <div class="pin pin-3"></div>
+            <div class="phone-hud">
+              <strong>Posição GPS</strong>
+              <span>22°54′12″ S · 43°10′28″ O</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="audience" id="para-quem">
+      <div class="wrap">
+        <p class="section-kicker reveal">Para quem vai a campo</p>
+        <h2 class="section-title reveal">Feito para quem precisa do mapa na mão — sem depender da rede.</h2>
+        <p class="section-lead reveal">
+          Agronomia, florestal, meio ambiente, topografia e consultoria: o Tessar Maps nasce no celular, no sol e na estrada de terra.
+        </p>
+        <ul class="audience-list">
+          <li class="reveal">
+            <strong>Agrônomos e técnicos</strong>
+            <span>Marque pontos de amostragem, pragas e observações com coordenada e foto no mesmo lugar.</span>
+          </li>
+          <li class="reveal">
+            <strong>Engenharia e florestal</strong>
+            <span>Trabalhe sobre GeoPDF, meça linhas e áreas, e exporte shapefile ou KMZ prontos.</span>
+          </li>
+          <li class="reveal">
+            <strong>Consultores e equipes</strong>
+            <span>Padronize o registro em campo e entregue relatório PDF com mapa, pins e fotos.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="how" id="como">
+      <div class="wrap">
+        <p class="section-kicker reveal">Como funciona</p>
+        <h2 class="section-title reveal">Do arquivo ao relatório, em quatro passos.</h2>
+        <p class="section-lead reveal">
+          Sem curso longo. Você importa o mapa, se localiza, registra o que viu e leva os dados para o software que já usa.
+        </p>
+        <ol class="steps">
+          <li class="reveal">
+            <h3>Importe o mapa</h3>
+            <p>PDF georreferenciado ou imagem. Se veio do QGIS, ArcGIS ou Avenza, as coordenadas entram sozinhas.</p>
+          </li>
+          <li class="reveal">
+            <h3>Localize-se</h3>
+            <p>O GPS mostra onde você está e para onde o celular aponta — mesmo sem internet no mapa importado.</p>
+          </li>
+          <li class="reveal">
+            <h3>Registre o campo</h3>
+            <p>Pins com nome, notas e fotos com data, hora e coordenada na imagem. Linhas, trilhas GPS e medições.</p>
+          </li>
+          <li class="reveal">
+            <h3>Exporte</h3>
+            <p>KMZ com fotos, KML, shapefile em ZIP ou relatório PDF com visão geral e mapa de cada pin.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="features" id="recursos">
+      <div class="wrap">
+        <p class="section-kicker reveal">Recursos</p>
+        <h2 class="section-title reveal">Tudo o que o campo pede, sem peso de desktop.</h2>
+        <p class="section-lead reveal">
+          Pins, camadas, medições e exportações pensados para quem já vive entre GPS, QGIS e Google Earth.
+        </p>
+
+        <article class="feature-row reveal">
+          <div class="feature-copy">
+            <h3>Pins com fotos e marca d’água</h3>
+            <p>
+              Cada ponto guarda coordenada, observações e fotos. A câmera coloca data, hora e coordenada na base da imagem —
+              em graus, DMS ou UTM (SIRGAS 2000 / WGS 84).
+            </p>
+          </div>
+          <div class="feature-visual fv-pins" aria-hidden="true">
+            <div class="demo-pin"></div>
+            <div class="demo-pin"></div>
+            <div class="caption">
+              Ponto de amostragem A3
+              <small>22°54′12″ S · 43°10′28″ O · 14:32</small>
+            </div>
+          </div>
+        </article>
+
+        <article class="feature-row reverse reveal">
+          <div class="feature-copy">
+            <h3>Camadas KML, KMZ e shapefile</h3>
+            <p>
+              Traga polígonos e linhas de outros programas. Ligue ou desligue no mapa, ajuste cor e transparência —
+              e use em todos os seus projetos.
+            </p>
+          </div>
+          <div class="feature-visual fv-layers" aria-hidden="true">
+            <div class="layer-stack">
+              <div class="layer-item"><span style="display:flex;gap:0.6rem;align-items:center"><i class="swatch" style="background:#0F6A8F"></i> Limites da fazenda</span>✓</div>
+              <div class="layer-item"><span style="display:flex;gap:0.6rem;align-items:center"><i class="swatch" style="background:#A8D311"></i> Talhões</span>✓</div>
+              <div class="layer-item"><span style="display:flex;gap:0.6rem;align-items:center"><i class="swatch" style="background:#D24B1F"></i> Áreas de APP</span>✓</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="feature-row reveal">
+          <div class="feature-copy">
+            <h3>Exportação que o escritório entende</h3>
+            <p>
+              Relatório PDF com logo Tessar e mapas dos pins. KMZ para Google Earth e Avenza. Shapefile em ZIP com pasta de fotos.
+              Pronto para o fluxo que você já tem.
+            </p>
+          </div>
+          <div class="feature-visual fv-export" aria-hidden="true">
+            <span class="format-chip">PDF</span>
+            <span class="format-chip soft">KMZ</span>
+            <span class="format-chip soft">KML</span>
+            <span class="format-chip soft">SHP</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="offline">
+      <div class="wrap offline-inner">
+        <div class="reveal">
+          <h2>Mapa importado funciona sem internet.</h2>
+          <p>
+            No campo a rede some. O Tessar Maps continua: PDF ou imagem no aparelho, GPS local, pins e trilhas.
+            Quando houver sinal, o mapa online traz satélite, híbrido ou ruas.
+          </p>
+        </div>
+        <a class="btn btn-lime reveal" href="#contato">Conversar sobre o app</a>
+      </div>
+    </section>
+
+    <section class="cta" id="contato">
+      <div class="wrap reveal">
+        <h2>Leve o Tessar Maps para a sua equipe.</h2>
+        <p>
+          Estamos preparando a publicação nas lojas. Enquanto isso, fale conosco para demonstração, piloto ou parceria.
+        </p>
+        <div class="btn-row">
+          <a class="btn btn-forest" href="mailto:beatrizamoriml@outlook.com?subject=Tessar%20Maps%20—%20interesse">
+            Escrever para Beatriz
+          </a>
+          <a class="btn btn-lime" href="mailto:beatrizamoriml@outlook.com?subject=Tessar%20Maps%20—%20demo">
+            Pedir uma demonstração
+          </a>
+        </div>
+        <p class="stores-note">Em breve na App Store e na Google Play · iOS e Android</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <p><strong>Tessar Maps</strong> — Cada dado compõe uma visão maior.</p>
+      <p>
+        <a href="mailto:beatrizamoriml@outlook.com">beatrizamoriml@outlook.com</a>
+        ·
+        <a href="privacidade.html">Privacidade</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.16, rootMargin: "0px 0px -40px 0px" }
+    );
+    document.querySelectorAll(".reveal").forEach((el, i) => {
+      el.style.transitionDelay = `${(i % 4) * 60}ms`;
+      observer.observe(el);
+    });
+  </script>
+</body>
+</html>
